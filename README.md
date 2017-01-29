@@ -8,8 +8,8 @@ TODO
 
 ## Example
 
-[https://github.com/Izumi-kun/yii2-longpoll-example]()
+[https://github.com/Izumi-kun/yii2-longpoll-example](https://github.com/Izumi-kun/yii2-longpoll-example)
 
-License
--------
+## License
+
 BSD-3-Clause
