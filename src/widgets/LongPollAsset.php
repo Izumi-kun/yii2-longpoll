@@ -10,9 +10,9 @@ use yii\web\AssetBundle;
  */
 class LongPollAsset extends AssetBundle
 {
-    public $sourcePath = '@vendor/izumi-kun/yii2-longpoll/src/assets';
+    public $sourcePath = '@npm/jquery-longpoll-client/dist';
     public $js = [
-        'longpoll.js',
+        'jquery.longpoll.min.js',
     ];
     public $depends = [
         'yii\web\YiiAsset',

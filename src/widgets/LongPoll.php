@@ -57,11 +57,12 @@ class LongPoll extends Widget
      */
     public function run()
     {
+        $id = $this->getId();
         $options = Json::htmlEncode($this->createJsOptions());
         $view = $this->getView();
         LongPollAsset::register($view);
-        $view->registerJs("window.longpoll.register($options);", View::POS_END);
-        $view->registerJs('window.longpoll.start();', View::POS_READY);
+        $view->registerJs("jQuery.longpoll.register('$id', $options);", View::POS_END);
+        $view->registerJs("jQuery.longpoll.get('$id').start();", View::POS_READY);
     }
 
     /**
