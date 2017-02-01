@@ -2,7 +2,7 @@
   "name": "izumi-kun/yii2-longpoll",
   "description": "Implements long polling connection",
   "type": "yii2-extension",
-  "keywords": ["yii2", "extension", "longpoll", "longpoling", "comet", "server"],
+  "keywords": ["yii2", "extension", "longpoll", "longpolling", "comet", "server"],
   "license": "BSD-3-Clause",
   "authors": [
     {

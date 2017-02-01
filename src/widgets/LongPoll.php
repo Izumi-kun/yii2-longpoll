@@ -13,7 +13,16 @@ use yii\web\JsExpression;
 use yii\web\View;
 
 /**
- * Class LongPollWidget
+ * Usage:
+ *
+ * ```php
+ * LongPoll::widget([
+ *     'url' => ['site/polling'],
+ *     'events' => ['eventId'],
+ *     'callback' => 'console.log',
+ * ]);
+ * ```
+ *
  * @author Viktor Khokhryakov <viktor.khokhryakov@gmail.com>
  */
 class LongPoll extends Widget

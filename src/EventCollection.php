@@ -6,7 +6,7 @@ use Yii;
 use yii\base\Object;
 
 /**
- * Class BaseEventCollection
+ * Class EventCollection
  * @property EventInterface[] $events array of events.
  * @author Viktor Khokhryakov <viktor.khokhryakov@gmail.com>
  */
