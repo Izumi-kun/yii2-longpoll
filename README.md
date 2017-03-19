@@ -36,6 +36,12 @@ LongPoll::widget([
 ]);
 ```
 
+### Model
+
+```php
+\izumi\longpoll\Event::triggerByKey('eventId');
+```
+
 ## Example
 
 [https://github.com/Izumi-kun/yii2-longpoll-example](https://github.com/Izumi-kun/yii2-longpoll-example)
