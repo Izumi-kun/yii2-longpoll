@@ -94,6 +94,9 @@ class Server extends Object
         $endTime = time() + $this->timeout;
         do {
             $triggered = [];
+            if (connection_aborted()) {
+                break;
+            }
             foreach ($events as $eventKey => $event) {
                 $event->updateState();
                 if ($event->getState() !== $lastStates[$eventKey]) {
