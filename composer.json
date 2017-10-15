@@ -4,6 +4,9 @@
   "type": "yii2-extension",
   "keywords": ["yii2", "extension", "longpoll", "longpolling", "comet", "server"],
   "license": "BSD-3-Clause",
+  "scripts": {
+    "test": "phpunit --verbose"
+  },
   "authors": [
     {
       "name": "Viktor Khokhryakov",
@@ -13,6 +16,10 @@
   "require": {
     "yiisoft/yii2": "~2.0.0",
     "npm-asset/jquery-longpoll-client": "0.3.0"
+  },
+  "require-dev": {
+    "php": "^7.0",
+    "phpunit/phpunit": "~6.4.0"
   },
   "repositories": [
     {
