@@ -14,17 +14,15 @@
     "yiisoft/yii2": "~2.0.0",
     "npm-asset/jquery-longpoll-client": "0.3.0"
   },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://asset-packagist.org"
+    }
+  ],
   "autoload": {
     "psr-4": {
       "izumi\\longpoll\\": "src"
-    }
-  },
-  "config": {
-    "fxp-asset": {
-      "installer-paths": {
-        "npm-asset-library": "vendor/npm",
-        "bower-asset-library": "vendor/bower"
-      }
     }
   }
 }
