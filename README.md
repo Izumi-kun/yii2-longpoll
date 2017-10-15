@@ -2,6 +2,10 @@
 
 Implements long polling AJAX mechanism.
 
+[![Latest Stable Version](https://poser.pugx.org/izumi-kun/yii2-longpoll/v/stable)](https://packagist.org/packages/izumi-kun/yii2-longpoll)
+[![Total Downloads](https://poser.pugx.org/izumi-kun/yii2-longpoll/downloads)](https://packagist.org/packages/izumi-kun/yii2-longpoll)
+[![Build Status](https://travis-ci.org/Izumi-kun/yii2-longpoll.svg?branch=master)](https://travis-ci.org/Izumi-kun/yii2-longpoll)
+
 ## Usage
 
 ### Controller
