@@ -9,7 +9,7 @@ namespace izumi\longpoll;
 interface EventCollectionInterface
 {
     /**
-     * @param EventInterface|string $event the event object or key
+     * @param EventInterface|array|string $event the event object, config or key
      * @return EventInterface
      */
     public function addEvent($event);
