@@ -6,6 +6,7 @@ use izumi\longpoll\widgets\LongPoll;
 use Yii;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
+use yii\base\InvalidParamException;
 use yii\base\Object;
 use yii\web\Response;
 
@@ -72,7 +73,7 @@ class Server extends Object
         }
 
         $events = $this->eventCollection->getEvents();
-        if (!$events) {
+        if (empty($events)) {
             throw new InvalidConfigException('At least one event should be added to the poll.');
         }
 
@@ -89,7 +90,7 @@ class Server extends Object
             $lastStates[$eventKey] = $lastState;
         }
 
-        Yii::$app->session->close();
+        Yii::$app->getSession()->close();
 
         $endTime = time() + $this->timeout;
         do {
@@ -132,12 +133,15 @@ class Server extends Object
 
     /**
      * @param EventInterface|array|string $event
-     * @param mixed|null $lastState
+     * @param int|null $lastState
      */
     public function addEvent($event, $lastState = null)
     {
         $event = $this->eventCollection->addEvent($event);
         if ($lastState !== null) {
+            if (!is_int($lastState)) {
+                throw new InvalidParamException('$lastState must be an integer');
+            }
             $this->lastStates[$event->getKey()] = $lastState;
         }
     }
