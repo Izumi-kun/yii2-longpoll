@@ -100,7 +100,7 @@ class Event extends Object implements EventInterface
         }
 
         @flock($fp, LOCK_EX);
-        $state = (int)@stream_get_contents($fp) ?: 0;
+        $state = (int) @stream_get_contents($fp) ?: 0;
         if ($state === PHP_INT_MAX) {
             $state = 0;
         }
@@ -108,11 +108,16 @@ class Event extends Object implements EventInterface
 
         @ftruncate($fp, 0);
         @rewind($fp);
-        @fwrite($fp, (string)$state);
+        @fwrite($fp, (string) $state);
         @flock($fp, LOCK_UN);
         @fclose($fp);
 
-        return @touch($this->_filePath, $state) ? $state : null;
+        if (@touch($this->_filePath, $state)) {
+            $this->_state = $state;
+            return $state;
+        }
+
+        return null;
     }
 
     /**
