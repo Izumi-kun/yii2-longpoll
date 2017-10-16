@@ -132,7 +132,7 @@ class Server extends Object
     }
 
     /**
-     * @param EventInterface|array|string $event
+     * @param EventInterface|string $event
      * @param int|null $lastState
      */
     public function addEvent($event, $lastState = null)
