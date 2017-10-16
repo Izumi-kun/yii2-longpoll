@@ -3,6 +3,7 @@
 namespace izumi\longpoll;
 
 use Yii;
+use yii\base\InvalidConfigException;
 use yii\base\Object;
 
 /**
@@ -34,6 +35,9 @@ class EventCollection extends Object implements EventCollectionInterface
                 ];
             }
             $event = Yii::createObject($event);
+            if (!$event instanceof EventInterface) {
+                throw new InvalidConfigException('The event should be an instance of "\izumi\longpoll\EventInterface".');
+            }
         }
         $this->_events[$event->getKey()] = $event;
 
