@@ -1,6 +1,11 @@
 <?php
+/**
+ * @link https://github.com/Izumi-kun/yii2-longpoll
+ * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @license http://opensource.org/licenses/BSD-3-Clause
+ */
 
-namespace izumi\tests\longpoll;
+namespace tests;
 
 use izumi\longpoll\EventCollectionInterface;
 use Yii;
@@ -9,11 +14,6 @@ class EventCollectionTest extends TestCase
 {
     public $eventClass = 'izumi\longpoll\Event';
     public $eventCollectionClass = 'izumi\longpoll\EventCollection';
-
-    public function setUp()
-    {
-        $this->mockApplication();
-    }
 
     /**
      * @param mixed $events

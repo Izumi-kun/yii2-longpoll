@@ -9,7 +9,6 @@ namespace izumi\longpoll;
 
 use Yii;
 use yii\base\Action;
-use yii\base\InvalidConfigException;
 use yii\web\Response;
 
 /**
@@ -34,23 +33,16 @@ class BaseLongPollAction extends Action
 
     /**
      * @return Response
-     * @throws InvalidConfigException
      */
     protected function runInternal()
     {
-        if (!is_callable($this->callback)) {
-            throw new InvalidConfigException('"' . get_class($this) . '::callback" should be a valid callback.');
-        }
         /** @var Server $server */
         $server = Yii::createObject([
             'class' => $this->serverClass,
             'events' => $this->events,
+            'callback' => $this->callback,
         ]);
-        $server->run();
-        if ($server->getTriggeredEvents()) {
-            call_user_func($this->callback, $server);
-        }
 
-        return $server->getResponse();
+        return $server;
     }
 }

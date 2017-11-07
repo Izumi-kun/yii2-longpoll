@@ -9,20 +9,23 @@ namespace izumi\longpoll;
 
 use izumi\longpoll\widgets\LongPoll;
 use Yii;
-use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
-use yii\base\Object;
+use yii\helpers\Json;
 use yii\web\Response;
 
 /**
- * Class implements long polling connection
+ * Class implements long polling connection.
+ *
  * @property EventInterface[]|null $triggeredEvents
- * @property Response $response
  * @author Viktor Khokhryakov <viktor.khokhryakov@gmail.com>
  */
-class Server extends Object
+class Server extends Response
 {
+    /**
+     * @var callable
+     */
+    public $callback;
     /**
      * @var mixed response data
      */
@@ -69,71 +72,74 @@ class Server extends Object
     }
 
     /**
+     * Prepares for sending the response.
      * @throws InvalidConfigException
      */
-    public function run()
+    protected function prepare()
     {
-        if ($this->_triggeredEvents !== null) {
-            throw new InvalidCallException('Poll can be run only once.');
-        }
-
         $events = $this->eventCollection->getEvents();
         if (empty($events)) {
             throw new InvalidConfigException('At least one event should be added to the poll.');
         }
-
-        $lastStates = [];
         foreach ($events as $eventKey => $event) {
-            if (isset($this->lastStates[$eventKey])) {
-                $lastState = $this->lastStates[$eventKey];
-            } else {
-                $lastState = Yii::$app->getRequest()->getQueryParam($event->getParamName());
+            if (!isset($this->lastStates[$eventKey])) {
+                $this->lastStates[$eventKey] = (int) Yii::$app->getRequest()->getQueryParam($event->getParamName());
             }
-            if ($lastState !== null) {
-                $lastState = (int) $lastState;
-            }
-            $lastStates[$eventKey] = $lastState;
         }
 
-        Yii::$app->getSession()->close();
+        $this->version = '1.1';
+        $this->getHeaders()
+            ->set('Transfer-Encoding', 'chunked')
+            ->set('Content-Type', 'application/json; charset=UTF-8');
 
+        Yii::$app->getSession()->close();
+    }
+
+    /**
+     * Sends the response content to the client.
+     */
+    protected function sendContent()
+    {
+        $events = $this->eventCollection->getEvents();
         $endTime = time() + $this->timeout;
+        $connectionTestTime = time() + 1;
+        $this->clearOutputBuffers();
         do {
             $triggered = [];
             foreach ($events as $eventKey => $event) {
                 $event->updateState();
-                if ($event->getState() !== $lastStates[$eventKey]) {
+                if ($event->getState() !== $this->lastStates[$eventKey]) {
                     $triggered[] = $event;
                 }
             }
-            if ($triggered) {
+            if (!empty($triggered)) {
                 break;
             }
             usleep($this->sleepTime);
+            if (time() >= $connectionTestTime) {
+                echo "0";
+                flush();
+                if (connection_aborted()) {
+                    Yii::$app->end();
+                }
+                $connectionTestTime++;
+            }
         } while (time() < $endTime);
 
         $this->_triggeredEvents = $triggered;
-    }
 
-    /**
-     * Return formatted response.
-     * @return Response
-     */
-    public function getResponse()
-    {
-        if ($this->_triggeredEvents === null) {
-            throw new InvalidCallException('Run poll first');
+        if (!empty($triggered) && is_callable($this->callback)) {
+            call_user_func($this->callback, $this);
         }
-        $params = (array) $this->responseParams;
 
-        $response = new Response();
-        $response->format = Response::FORMAT_JSON;
-        $response->data = [
+        $params = (array) $this->responseParams;
+        $json = Json::encode([
             'data' => $this->responseData,
             'params' => LongPoll::createPollParams($this->eventCollection, $params)
-        ];
+        ]);
 
-        return $response;
+        echo dechex(strlen($json)), "\r\n", $json, "\r\n";
+        echo "0\r\n\r\n";
     }
 
     /**

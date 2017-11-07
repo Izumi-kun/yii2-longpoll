@@ -1,92 +1,106 @@
 <?php
+/**
+ * @link https://github.com/Izumi-kun/yii2-longpoll
+ * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @license http://opensource.org/licenses/BSD-3-Clause
+ */
 
-namespace izumi\tests\longpoll;
+namespace tests;
 
-use izumi\longpoll\Event;
-use izumi\longpoll\Server;
+use Exception;
+use izumi\longpoll\EventCollection;
+use izumi\longpoll\widgets\LongPoll;
+use Symfony\Component\Process\Process;
 use Yii;
-use yii\helpers\ArrayHelper;
-use yii\web\Response;
+use yii\helpers\Url;
+use yii\httpclient\Client;
+use yii\httpclient\CurlTransport;
 
-class ServerTest extends TestCase
+class ServerTest extends \PHPUnit\Framework\TestCase
 {
-    public function setUp()
-    {
-        $this->mockWebApplication();
-    }
-
     /**
-     * @param array $config
-     * @return Server
+     * @var Process
      */
-    protected function createServer($config = [])
+    private static $server;
+
+    public static function setUpBeforeClass()
     {
-        $server = new Server(ArrayHelper::merge($config, [
-            'timeout' => 2,
-        ]));
-        $params = [];
-        foreach ($server->eventCollection->getEvents() as $event) {
-            $params[$event->getParamName()] = (string) $event->getState();
+        $documentRoot = Yii::getAlias('@app/web');
+        $server = new Process(PHP_BINARY . " -S 127.0.0.1:8080 -t \"{$documentRoot}\"");
+        $server->start();
+        self::$server = $server;
+        $timeout = 5 + time();
+        while (true) {
+            usleep(250000);
+            if ($server->isRunning()) {
+                $test = @file_get_contents(Url::to('test.txt', true));
+                if ($test === "success\n") {
+                    break;
+                }
+            } else {
+                throw new Exception($server->getErrorOutput());
+            }
+            if ($timeout < time()) {
+                throw new Exception();
+            }
         }
-        Yii::$app->getRequest()->setQueryParams($params);
-        return $server;
     }
 
-    public function testServer()
+    public static function tearDownAfterClass()
     {
-        $server = new Server([
-            'events' => 'testEvent1',
-            'timeout' => 2,
-        ]);
-        $events = $server->eventCollection->getEvents();
-        $this->assertThat($events, $this->countOf(1));
+        self::$server->stop();
     }
 
-    /**
-     * @depends testServer
-     */
-    public function testRun()
+    protected function getLastRequest()
     {
-        $event1 = new Event(['key' => 'testEvent1']);
-        $server = $this->createServer(['events' => $event1]);
-        $this->assertNull($server->getTriggeredEvents());
-        $timeStart = time();
-        $server->run();
-        $timeEnd = time();
-        $this->assertGreaterThanOrEqual($server->timeout, $timeEnd - $timeStart);
-        $this->assertEmpty($server->getTriggeredEvents());
-
-        $event2 = new Event(['key' => 'testEvent2']);
-        $server = $this->createServer(['events' => [$event1, $event2]]);
-        Event::triggerByKey($event2->key);
-        $server->run();
-        $triggeredEvents = $server->getTriggeredEvents();
-        $this->assertContains($event2, $triggeredEvents);
-        $this->assertNotContains($event1, $triggeredEvents);
+        $output = explode("\n", trim(self::$server->getErrorOutput()));
+        return array_pop($output);
     }
 
-    /**
-     * @depends testRun
-     */
-    public function testResponse()
+    protected function changeMessage($text, int $delay = 2)
     {
-        $event = new Event(['key' => 'testEvent1']);
-        $server = $this->createServer(['events' => $event]);
-        $state = $event->trigger();
-        $server->run();
-        $server->responseData = ['testData' => 'testString'];
-        $server->responseParams = ['testParam' => 9];
-        $response = $server->getResponse();
-        $this->assertInstanceOf(Response::class, $response);
-        $this->assertEquals(Response::FORMAT_JSON, $response->format);
-        $this->assertArraySubset([
-            'data' => [
-                'testData' => 'testString',
-            ],
-            'params' => [
-                'testParam' => 9,
-                $event->getParamName() => $state,
-            ],
-        ], $response->data, true);
+        $text = '"' . escapeshellcmd($text) . '"';
+        $cmd = "message/change --delay={$delay} {$text}";
+        $process = new Process(PHP_BINARY . " tests/yii $cmd");
+        $process->start();
+    }
+
+    protected function runLongPoll(float $timeout, $extraParams = [])
+    {
+        $params = LongPoll::createPollParams(new EventCollection(['events' => 'newMessage']), $extraParams);
+        $url = Url::to(array_merge(['/poll/index'], $params), true);
+        $request = (new Client(['transport' => CurlTransport::class]))
+            ->createRequest()
+            ->setUrl($url)
+            ->setOptions([
+                CURLOPT_TIMEOUT => $timeout,
+            ]);
+        try {
+            $response = $request->send();
+        } catch (\yii\httpclient\Exception $e) {
+            return '';
+        }
+        $result = $response->getData();
+        $this->assertArrayHasKey('data', $result);
+        $this->assertArrayHasKey('params', $result);
+        $this->assertEquals('chunked', $response->getHeaders()->get('Transfer-Encoding'));
+
+        return $result;
+    }
+
+    public function testChangeMessage()
+    {
+        $newMessage = Yii::$app->getSecurity()->generateRandomString();
+        $this->changeMessage($newMessage, 2);
+        $result = $this->runLongPoll(5);
+        $this->assertEquals($newMessage, $result['data']);
+    }
+
+    public function testConnectionAbort()
+    {
+        $string = Yii::$app->getSecurity()->generateRandomString();
+        $this->runLongPoll(2, ['s' => $string]);
+        sleep(2);
+        $this->assertNotFalse(strpos($this->getLastRequest(), $string));
     }
 }

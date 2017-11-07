@@ -19,7 +19,9 @@
   },
   "require-dev": {
     "php": "^7.0",
-    "phpunit/phpunit": "~6.4.0"
+    "phpunit/phpunit": "~6.4.0",
+    "symfony/process": "*",
+    "yiisoft/yii2-httpclient": "^2.0"
   },
   "repositories": [
     {
