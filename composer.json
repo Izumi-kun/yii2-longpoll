@@ -14,7 +14,7 @@
     }
   ],
   "require": {
-    "yiisoft/yii2": "~2.0.0",
+    "yiisoft/yii2": "~2.0.13",
     "npm-asset/jquery-longpoll-client": "0.3.0"
   },
   "require-dev": {

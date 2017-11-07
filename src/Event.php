@@ -8,10 +8,10 @@
 namespace izumi\longpoll;
 
 use Yii;
+use yii\base\BaseObject;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
-use yii\base\Object;
 use yii\helpers\FileHelper;
 use yii\helpers\StringHelper;
 
@@ -21,7 +21,7 @@ use yii\helpers\StringHelper;
  * @property int $state The event state.
  * @author Viktor Khokhryakov <viktor.khokhryakov@gmail.com>
  */
-class Event extends Object implements EventInterface
+class Event extends BaseObject implements EventInterface
 {
     /**
      * @var string prefix of the parameter storing the state of event

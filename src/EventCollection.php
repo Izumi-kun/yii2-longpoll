@@ -8,15 +8,15 @@
 namespace izumi\longpoll;
 
 use Yii;
+use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
-use yii\base\Object;
 
 /**
  * Class EventCollection
  * @property EventInterface[] $events array of events.
  * @author Viktor Khokhryakov <viktor.khokhryakov@gmail.com>
  */
-class EventCollection extends Object implements EventCollectionInterface
+class EventCollection extends BaseObject implements EventCollectionInterface
 {
     /**
      * @var EventInterface[] array of events (key => event).
