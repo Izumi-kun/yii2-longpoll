@@ -4,6 +4,10 @@ $config = [
     'id' => 'test-app',
     'basePath' => dirname(__DIR__),
     'vendorPath' => dirname(dirname(dirname(__DIR__))) . '/vendor',
+    'aliases' => [
+        '@bower' => '@vendor/bower-asset',
+        '@npm' => '@vendor/npm-asset',
+    ],
     'controllerMap' => [
         'message' => [
             'class' => \tests\app\controllers\MessageController::class,
