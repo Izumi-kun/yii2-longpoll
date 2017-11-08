@@ -13,6 +13,8 @@ use yii\web\Controller;
 
 class PollController extends Controller
 {
+    public $enableCsrfValidation = false;
+
     public function actions()
     {
         return [
