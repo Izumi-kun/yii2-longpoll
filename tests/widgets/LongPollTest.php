@@ -100,6 +100,13 @@ class LongPollTest extends TestCase
         ], $jsOptions);
     }
 
+    public function testCreateJsOptionsWithoutUrl()
+    {
+        $widget = new LongPoll(['events' => 'test']);
+        $this->expectException(InvalidConfigException::class);
+        $widget->createJsOptions();
+    }
+
     /**
      * @depends testCreateJsOptions
      */
