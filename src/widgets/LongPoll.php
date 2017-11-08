@@ -91,11 +91,11 @@ class LongPoll extends Widget
         foreach ($eventCollection->getEvents() as $event) {
             $events[$event->getParamName()] = $event->getState();
         }
-        if (count($events) === 0) {
+        if (empty($events)) {
             throw new InvalidConfigException('At least one event should be added.');
         }
         if (array_intersect_key($events, $params)) {
-            throw new InvalidParamException();
+            throw new InvalidParamException('The "params" property contains keys that intersect with events.');
         }
 
         return $params + $events;
