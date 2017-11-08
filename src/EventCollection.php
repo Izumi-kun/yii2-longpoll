@@ -21,7 +21,7 @@ class EventCollection extends BaseObject implements EventCollectionInterface
     /**
      * @var EventInterface[] array of events (key => event).
      */
-    private $_events;
+    private $_events = [];
     /**
      * @var string event class name.
      */

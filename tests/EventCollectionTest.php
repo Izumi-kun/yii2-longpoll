@@ -8,6 +8,7 @@
 namespace tests;
 
 use izumi\longpoll\EventCollectionInterface;
+use izumi\longpoll\EventInterface;
 use Yii;
 
 class EventCollectionTest extends TestCase
@@ -21,10 +22,11 @@ class EventCollectionTest extends TestCase
      */
     public function createEventCollection($events = null)
     {
-        return Yii::createObject([
-            'class' => $this->eventCollectionClass,
-            'events' => $events,
-        ]);
+        $config = ['class' => $this->eventCollectionClass];
+        if ($events !== null) {
+            $config['events'] = $events;
+        }
+        return Yii::createObject($config);
     }
 
     public function eventsProvider()
@@ -32,6 +34,8 @@ class EventCollectionTest extends TestCase
         $key1 = 'testEvent1';
         $key2 = 'testEvent2';
         return [
+            'null' => [null, 0],
+            'empty' => [[], 0],
             'single' => [$key1, 1],
             'array single' => [[$key1], 1],
             'array multiple' => [[$key1, $key2], 2],
@@ -57,8 +61,8 @@ class EventCollectionTest extends TestCase
     {
         $eventCollection = $this->createEventCollection($events);
         $objects = $eventCollection->getEvents();
-        $this->assertThat($objects, $this->countOf($cnt));
-        $this->assertThat($objects, $this->containsOnlyInstancesOf('izumi\longpoll\EventInterface'));
+        $this->assertCount($cnt, $objects);
+        $this->assertContainsOnlyInstancesOf(EventInterface::class, $objects);
         foreach ($objects as $key => $event) {
             $this->assertEquals($key, $event->getKey());
         }
