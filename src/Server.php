@@ -104,6 +104,7 @@ class Server extends Response
         $endTime = time() + $this->timeout;
         $connectionTestTime = time() + 1;
         $this->clearOutputBuffers();
+        ignore_user_abort(true);
         do {
             $triggered = [];
             foreach ($events as $eventKey => $event) {
@@ -117,9 +118,10 @@ class Server extends Response
             }
             usleep($this->sleepTime);
             if (time() >= $connectionTestTime) {
-                echo "0";
+                echo '0';
                 flush();
                 if (connection_aborted()) {
+                    Yii::trace('Client disconnected', __METHOD__);
                     Yii::$app->end();
                 }
                 $connectionTestTime++;
@@ -158,7 +160,7 @@ class Server extends Response
     }
 
     /**
-     * @param array $events the events for waiting (any).
+     * @param array|EventInterface[]|string $events the events for waiting (any).
      */
     public function setEvents($events)
     {

@@ -16,7 +16,7 @@ use yii\helpers\Url;
 use yii\httpclient\Client;
 use yii\httpclient\CurlTransport;
 
-class ServerTest extends \PHPUnit\Framework\TestCase
+class ServerTest extends TestCase
 {
     /**
      * @var Process
@@ -26,7 +26,7 @@ class ServerTest extends \PHPUnit\Framework\TestCase
     public static function setUpBeforeClass()
     {
         $documentRoot = Yii::getAlias('@app/web');
-        $server = new Process(PHP_BINARY . " -S 127.0.0.1:8080 -t \"{$documentRoot}\"");
+        $server = new Process('"' . PHP_BINARY . '"' . " -S 127.0.0.1:8080 -t \"{$documentRoot}\"");
         $server->start();
         self::$server = $server;
         $timeout = 5 + time();
@@ -34,7 +34,7 @@ class ServerTest extends \PHPUnit\Framework\TestCase
             usleep(250000);
             if ($server->isRunning()) {
                 $test = @file_get_contents(Url::to('test.txt', true));
-                if ($test === "success\n") {
+                if (strpos($test, 'success') === 0) {
                     break;
                 }
             } else {
@@ -51,17 +51,11 @@ class ServerTest extends \PHPUnit\Framework\TestCase
         self::$server->stop();
     }
 
-    protected function getLastRequest()
-    {
-        $output = explode("\n", trim(self::$server->getErrorOutput()));
-        return array_pop($output);
-    }
-
     protected function changeMessage($text, int $delay = 2)
     {
         $text = '"' . escapeshellcmd($text) . '"';
         $cmd = "message/change --delay={$delay} {$text}";
-        $process = new Process(PHP_BINARY . " tests/yii $cmd");
+        $process = new Process('"' . PHP_BINARY . '"' . " tests/yii $cmd");
         $process->start();
     }
 
@@ -101,6 +95,7 @@ class ServerTest extends \PHPUnit\Framework\TestCase
         $string = Yii::$app->getSecurity()->generateRandomString();
         $this->runLongPoll(2, ['s' => $string]);
         sleep(2);
-        $this->assertNotFalse(strpos($this->getLastRequest(), $string));
+        $log = file_get_contents(Yii::getAlias('@runtime/logs/app.log'));
+        $this->assertNotFalse(strpos($log, 'Client disconnected'));
     }
 }
