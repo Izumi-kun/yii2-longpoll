@@ -96,31 +96,43 @@ class Event extends BaseObject implements EventInterface
      */
     public function trigger()
     {
-        $fp = @fopen($this->_filePath, 'c+');
-        if ($fp === false) {
-            $error = error_get_last();
-            Yii::warning("Unable to trigger event '{$this->_key}': {$error['message']}", __METHOD__);
+        $filePath = $this->_filePath;
+        $tries = 4;
 
-            return null;
+        while ($tries > 0) {
+            $tries--;
+
+            $file = fopen($filePath, 'c+');
+
+            if ($file === false) {
+                break;
+            }
+
+            if (!flock($file, LOCK_EX | LOCK_NB)) {
+                fclose($file);
+                usleep(250000);
+                continue;
+            }
+
+            $state = (int) stream_get_contents($file) ?: 0;
+            if ($state >= time() + 1000000) {
+                $state = 0;
+            }
+            $state++;
+
+            ftruncate($file, 0);
+            rewind($file);
+            fwrite($file, (string) $state);
+            flock($file, LOCK_UN);
+            fclose($file);
+
+            if (touch($filePath, $state)) {
+                $this->_state = $state;
+                return $state;
+            }
         }
 
-        @flock($fp, LOCK_EX);
-        $state = (int) @stream_get_contents($fp) ?: 0;
-        if ($state === PHP_INT_MAX) {
-            $state = 0;
-        }
-        $state++;
-
-        @ftruncate($fp, 0);
-        @rewind($fp);
-        @fwrite($fp, (string) $state);
-        @flock($fp, LOCK_UN);
-        @fclose($fp);
-
-        if (@touch($this->_filePath, $state)) {
-            $this->_state = $state;
-            return $state;
-        }
+        Yii::warning("Unable to trigger event '{$this->_key}'", __METHOD__);
 
         return null;
     }
