@@ -8,7 +8,10 @@
 namespace tests;
 
 use Exception;
+use izumi\longpoll\Event;
 use izumi\longpoll\EventCollection;
+use izumi\longpoll\EventCollectionInterface;
+use izumi\longpoll\Server;
 use izumi\longpoll\widgets\LongPoll;
 use Symfony\Component\Process\Process;
 use Yii;
@@ -82,7 +85,85 @@ class ServerTest extends TestCase
         return $result;
     }
 
-    public function testChangeMessage()
+    public function testSetEvents()
+    {
+        $server = new Server();
+        $collection = $server->eventCollection;
+        $this->assertInstanceOf(EventCollectionInterface::class, $collection);
+        $this->assertEmpty($collection->getEvents());
+
+        $server->setEvents(['testEvent']);
+        $this->assertArrayHasKey('testEvent', $server->eventCollection->getEvents());
+
+        $server = new Server(['events' => 'test2']);
+        $collection = $server->eventCollection;
+        $this->assertInstanceOf(EventCollectionInterface::class, $collection);
+        $this->assertArrayHasKey('test2', $collection->getEvents());
+    }
+
+    /**
+     * @depends testSetEvents
+     */
+    public function testAddEvent()
+    {
+        $server = new Server();
+        $server->addEvent('addTest');
+        $this->assertArrayHasKey('addTest', $server->eventCollection->getEvents());
+
+        $server->addEvent('addTest2', 123);
+        $this->assertArrayHasKey('addTest2', $server->eventCollection->getEvents());
+    }
+
+    public function sendDataProvider()
+    {
+        return [
+            [1],
+            [2],
+            [3],
+        ];
+    }
+
+    /**
+     * @depends testAddEvent
+     * @dataProvider sendDataProvider
+     * @param $delay
+     */
+    public function testSend($delay)
+    {
+        $event = new Event(['key' => 'newMessage']);
+        $server = new Server(['timeout' => $delay + 5]);
+        $server->addEvent($event, $event->getState());
+        $callbackCalled = false;
+        $state = 0;
+        $server->callback = function (Server $server) use (&$callbackCalled, &$state) {
+            $server->responseData = [
+                'key' => 'data',
+                'message' => Yii::$app->getCache()->get('message'),
+            ];
+            $server->responseParams = [
+                'param1' => 'test',
+            ];
+            $callbackCalled = true;
+            $state = $server->getTriggeredEvents()['newMessage']->getState();
+        };
+        $this->changeMessage('hello', $delay);
+        $start = time();
+        $server->send();
+        $this->assertTrue($callbackCalled);
+
+        $waitTime = time() - $start;
+        $json = <<<JSON
+{"data":{"key":"data","message":"hello"},"params":{"param1":"test","event-newMessage":{$state}}}
+JSON;
+        $leadingZeros = str_repeat('0', $waitTime);
+        $expectedResponse = $leadingZeros . dechex(strlen($json)) . "\r\n" . $json . "\r\n0\r\n\r\n";
+        $this->expectOutputString($expectedResponse);
+    }
+
+    /**
+     * @depends testSend
+     */
+    public function testChangeMessageRemote()
     {
         $newMessage = Yii::$app->getSecurity()->generateRandomString();
         $this->changeMessage($newMessage, 2);
@@ -90,6 +171,9 @@ class ServerTest extends TestCase
         $this->assertEquals($newMessage, $result['data']);
     }
 
+    /**
+     * @depends testSend
+     */
     public function testConnectionAbort()
     {
         $string = Yii::$app->getSecurity()->generateRandomString();

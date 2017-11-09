@@ -7,14 +7,17 @@
 
 namespace tests;
 
+use izumi\longpoll\Event;
+use izumi\longpoll\EventCollection;
 use izumi\longpoll\EventCollectionInterface;
 use izumi\longpoll\EventInterface;
 use Yii;
+use yii\base\InvalidConfigException;
 
 class EventCollectionTest extends TestCase
 {
-    public $eventClass = 'izumi\longpoll\Event';
-    public $eventCollectionClass = 'izumi\longpoll\EventCollection';
+    public $eventClass = Event::class;
+    public $eventCollectionClass = EventCollection::class;
 
     /**
      * @param mixed $events
@@ -66,5 +69,11 @@ class EventCollectionTest extends TestCase
         foreach ($objects as $key => $event) {
             $this->assertEquals($key, $event->getKey());
         }
+    }
+
+    public function testInvalidEvents()
+    {
+        $this->expectException(InvalidConfigException::class);
+        $this->createEventCollection([['class' => \stdClass::class, 'key' => 'test']]);
     }
 }

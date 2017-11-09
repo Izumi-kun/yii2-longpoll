@@ -65,9 +65,7 @@ class Server extends Response
     public function init()
     {
         if (!$this->eventCollection instanceof EventCollectionInterface) {
-            $this->eventCollection = Yii::createObject([
-                'class' => $this->eventCollectionClass,
-            ]);
+            $this->setEvents([]);
         }
     }
 
@@ -103,14 +101,16 @@ class Server extends Response
         $events = $this->eventCollection->getEvents();
         $endTime = time() + $this->timeout;
         $connectionTestTime = time() + 1;
-        $this->clearOutputBuffers();
+        if (!YII_ENV_TEST) {
+            $this->clearOutputBuffers();
+        }
         ignore_user_abort(true);
         do {
             $triggered = [];
             foreach ($events as $eventKey => $event) {
                 $event->updateState();
                 if ($event->getState() !== $this->lastStates[$eventKey]) {
-                    $triggered[] = $event;
+                    $triggered[$eventKey] = $event;
                 }
             }
             if (!empty($triggered)) {
@@ -164,14 +164,14 @@ class Server extends Response
      */
     public function setEvents($events)
     {
-        $this->eventCollection = Yii::createObject([
-            'class' => $this->eventCollectionClass,
-            'events' => $events,
-        ]);
+        if (!$this->eventCollection instanceof EventCollectionInterface) {
+            $this->eventCollection = Yii::createObject($this->eventCollectionClass);
+        }
+        $this->eventCollection->setEvents($events);
     }
 
     /**
-     * @return EventInterface[]|null
+     * @return EventInterface[]|null triggered events during poll run (key => event)
      */
     public function getTriggeredEvents()
     {

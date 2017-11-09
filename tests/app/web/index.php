@@ -15,5 +15,5 @@ Yii::setAlias('@tests', dirname(dirname(__DIR__)));
 
 \yii\helpers\FileHelper::removeDirectory(Yii::getAlias('@tests/app/runtime/logs'));
 
-$config = require(__DIR__ . '/../config/web.php');
+$config = require(__DIR__ . '/../config/remote.php');
 (new yii\web\Application($config))->run();

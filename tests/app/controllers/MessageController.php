@@ -31,7 +31,7 @@ class MessageController extends Controller
         if ($this->delay > 0) {
             sleep($this->delay);
         }
-        Yii::$app->cache->set('message', $text);
+        Yii::$app->getCache()->set('message', $text);
         Event::triggerByKey('newMessage');
     }
 }
