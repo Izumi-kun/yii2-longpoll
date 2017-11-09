@@ -79,6 +79,9 @@ class ServerTest extends TestCase
         } catch (\yii\httpclient\Exception $e) {
             return '';
         }
+        if (!$response->getIsOk()) {
+            return '';
+        }
         $result = $response->getData();
         $this->assertArrayHasKey('data', $result);
         $this->assertArrayHasKey('params', $result);
@@ -163,6 +166,33 @@ class ServerTest extends TestCase
         $waitTime = time() - $start;
         $json = <<<JSON
 {"data":{"key":"data","message":"hello"},"params":{"param1":"test","event-newMessage":{$state}}}
+JSON;
+        $leadingZeros = str_repeat('0', $waitTime);
+        $expectedResponse = $leadingZeros . dechex(strlen($json)) . "\r\n" . $json . "\r\n0\r\n\r\n";
+        $this->expectOutputString($expectedResponse);
+    }
+
+    /**
+     * @depends testAddEvent
+     */
+    public function testSendTimeout()
+    {
+        $event = new Event(['key' => 'newMessage']);
+        $server = new Server(['timeout' => 2]);
+        $server->addEvent($event, $event->getState());
+        $callbackCalled = false;
+        $server->callback = function (Server $server) use (&$callbackCalled) {
+            $server->responseData = 'no';
+            $server->responseParams = ['no' => 'no'];
+            $callbackCalled = true;
+        };
+        $start = time();
+        $server->send();
+        $this->assertFalse($callbackCalled);
+
+        $waitTime = time() - $start;
+        $json = <<<JSON
+{"data":null,"params":{"event-newMessage":{$event->getState()}}}
 JSON;
         $leadingZeros = str_repeat('0', $waitTime);
         $expectedResponse = $leadingZeros . dechex(strlen($json)) . "\r\n" . $json . "\r\n0\r\n\r\n";
