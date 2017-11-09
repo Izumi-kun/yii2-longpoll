@@ -99,7 +99,6 @@ class Event extends BaseObject implements EventInterface
         $filePath = $this->_filePath;
         $tries = 4;
         $lastError = 'unknown reason';
-        $state = null;
         set_error_handler(function () use (&$lastError) {
             $lastError = func_get_arg(1);
         });
