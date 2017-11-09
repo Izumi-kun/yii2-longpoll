@@ -23,5 +23,5 @@ foreach (glob(Yii::getAlias('@tests/app/runtime/*'), GLOB_ONLYDIR) as $dir) {
     \yii\helpers\FileHelper::removeDirectory($dir);
 }
 
-$config = require(__DIR__ . '/app/config/main.php');
+$config = require(__DIR__ . '/app/config/phpunit.php');
 $app = new \yii\web\Application($config);

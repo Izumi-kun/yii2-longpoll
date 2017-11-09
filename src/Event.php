@@ -98,7 +98,7 @@ class Event extends BaseObject implements EventInterface
     {
         $filePath = $this->_filePath;
         $tries = 4;
-        $lastError = null;
+        $lastError = 'unknown reason';
         $state = null;
         set_error_handler(function () use (&$lastError) {
             $lastError = func_get_arg(1);
@@ -115,6 +115,7 @@ class Event extends BaseObject implements EventInterface
             if (!flock($file, LOCK_EX | LOCK_NB)) {
                 fclose($file);
                 usleep(250000);
+                $lastError = 'unable to lock file';
                 continue;
             }
 
@@ -132,15 +133,11 @@ class Event extends BaseObject implements EventInterface
 
             if (touch($filePath, $state)) {
                 $this->_state = $state;
-                $lastError = null;
-                break;
+                restore_error_handler();
+                return $state;
             }
         }
         restore_error_handler();
-
-        if ($lastError === null) {
-            return $state;
-        }
 
         Yii::warning("Unable to trigger event '{$this->_key}': {$lastError}", __METHOD__);
 
