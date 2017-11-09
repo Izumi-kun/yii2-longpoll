@@ -10,6 +10,7 @@ namespace tests;
 use izumi\longpoll\Event;
 use Symfony\Component\Process\PhpProcess;
 use Yii;
+use yii\helpers\FileHelper;
 
 class EventTest extends EventTestCase
 {
@@ -47,6 +48,14 @@ PHP
 
         $result = Event::triggerByKey('lockTest');
         $this->assertNotNull($result);
+    }
+
+    public function testTriggerWithRemovedDir()
+    {
+        $event = new Event(['key' => 'rmDirTest']);
+        FileHelper::removeDirectory(Yii::getAlias('@runtime/events'));
+        $result = $event->trigger();
+        $this->assertNull($result);
     }
 
     /**

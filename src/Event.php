@@ -98,7 +98,11 @@ class Event extends BaseObject implements EventInterface
     {
         $filePath = $this->_filePath;
         $tries = 4;
-
+        $lastError = null;
+        $state = null;
+        set_error_handler(function () use (&$lastError) {
+            $lastError = func_get_arg(1);
+        });
         while ($tries > 0) {
             $tries--;
 
@@ -128,11 +132,17 @@ class Event extends BaseObject implements EventInterface
 
             if (touch($filePath, $state)) {
                 $this->_state = $state;
-                return $state;
+                $lastError = null;
+                break;
             }
         }
+        restore_error_handler();
 
-        Yii::warning("Unable to trigger event '{$this->_key}'", __METHOD__);
+        if ($lastError === null) {
+            return $state;
+        }
+
+        Yii::warning("Unable to trigger event '{$this->_key}': {$lastError}", __METHOD__);
 
         return null;
     }

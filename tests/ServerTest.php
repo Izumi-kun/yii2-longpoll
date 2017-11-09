@@ -15,6 +15,8 @@ use izumi\longpoll\Server;
 use izumi\longpoll\widgets\LongPoll;
 use Symfony\Component\Process\Process;
 use Yii;
+use yii\base\InvalidConfigException;
+use yii\base\InvalidParamException;
 use yii\helpers\Url;
 use yii\httpclient\Client;
 use yii\httpclient\CurlTransport;
@@ -114,6 +116,13 @@ class ServerTest extends TestCase
         $this->assertArrayHasKey('addTest2', $server->eventCollection->getEvents());
     }
 
+    public function testAddEventInvalidState()
+    {
+        $server = new Server();
+        $this->expectException(InvalidParamException::class);
+        $server->addEvent('addTest2', '123');
+    }
+
     public function sendDataProvider()
     {
         return [
@@ -158,6 +167,13 @@ JSON;
         $leadingZeros = str_repeat('0', $waitTime);
         $expectedResponse = $leadingZeros . dechex(strlen($json)) . "\r\n" . $json . "\r\n0\r\n\r\n";
         $this->expectOutputString($expectedResponse);
+    }
+
+    public function testSendWithoutEvents()
+    {
+        $server = new Server();
+        $this->expectException(InvalidConfigException::class);
+        $server->send();
     }
 
     /**
