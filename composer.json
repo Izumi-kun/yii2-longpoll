@@ -14,11 +14,11 @@
     }
   ],
   "require": {
-    "yiisoft/yii2": "~2.0.13",
+    "php": "^7.0",
+    "yiisoft/yii2": "~2.0.14",
     "npm-asset/jquery-longpoll-client": "0.3.0"
   },
   "require-dev": {
-    "php": "^7.0",
     "phpunit/phpunit": "~6.4.0",
     "symfony/process": "*",
     "yiisoft/yii2-httpclient": "^2.0"

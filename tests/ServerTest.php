@@ -15,8 +15,8 @@ use izumi\longpoll\Server;
 use izumi\longpoll\widgets\LongPoll;
 use Symfony\Component\Process\Process;
 use Yii;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 use yii\helpers\Url;
 use yii\httpclient\Client;
 use yii\httpclient\CurlTransport;
@@ -122,7 +122,7 @@ class ServerTest extends TestCase
     public function testAddEventInvalidState()
     {
         $server = new Server();
-        $this->expectException(InvalidParamException::class);
+        $this->expectException(InvalidArgumentException::class);
         $server->addEvent('addTest2', '123');
     }
 

@@ -7,10 +7,11 @@
 
 namespace izumi\longpoll\widgets;
 
+use izumi\longpoll\EventCollection;
 use izumi\longpoll\EventCollectionInterface;
 use Yii;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 use yii\base\Widget;
 use yii\helpers\Json;
 use yii\helpers\Url;
@@ -40,7 +41,7 @@ class LongPoll extends Widget
     /**
      * @var string event collection class name.
      */
-    public $eventCollectionClass = 'izumi\longpoll\EventCollection';
+    public $eventCollectionClass = EventCollection::class;
     /**
      * @var array additional options to be passed to JS registerer.
      */
@@ -56,6 +57,7 @@ class LongPoll extends Widget
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     public function init()
     {
@@ -68,6 +70,7 @@ class LongPoll extends Widget
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     public function run()
     {
@@ -95,7 +98,7 @@ class LongPoll extends Widget
             throw new InvalidConfigException('At least one event should be added.');
         }
         if (array_intersect_key($events, $params)) {
-            throw new InvalidParamException('The "params" property contains keys that intersect with events.');
+            throw new InvalidArgumentException('The "params" property contains keys that intersect with events.');
         }
 
         return $params + $events;
@@ -121,6 +124,7 @@ class LongPoll extends Widget
 
     /**
      * @param array $events
+     * @throws InvalidConfigException
      */
     public function setEvents($events)
     {

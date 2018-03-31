@@ -29,10 +29,11 @@ class BaseLongPollAction extends Action
     /**
      * @var string
      */
-    public $serverClass = 'izumi\longpoll\Server';
+    public $serverClass = Server::class;
 
     /**
      * @return Response
+     * @throws \yii\base\InvalidConfigException
      */
     protected function runInternal()
     {

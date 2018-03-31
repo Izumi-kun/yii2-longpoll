@@ -40,7 +40,7 @@ class SiteController extends Controller
     {
         return [
             'polling' => [
-                'class' => 'izumi\longpoll\LongPollAction',
+                'class' => LongPollAction::class,
                 'events' => ['eventId'],
                 'callback' => [$this, 'longPollCallback'],
             ],

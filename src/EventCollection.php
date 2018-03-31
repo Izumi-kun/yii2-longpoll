@@ -25,10 +25,11 @@ class EventCollection extends BaseObject implements EventCollectionInterface
     /**
      * @var string event class name.
      */
-    public $eventClass = 'izumi\longpoll\Event';
+    public $eventClass = Event::class;
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     public function addEvent($event)
     {
@@ -59,6 +60,7 @@ class EventCollection extends BaseObject implements EventCollectionInterface
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     public function setEvents($events)
     {

@@ -19,7 +19,7 @@ use yii\web\Response;
  *     {
  *         return [
  *             'polling' => [
- *                 'class' => 'izumi\longpoll\LongPollAction',
+ *                 'class' => LongPollAction::class,
  *                 'events' => ['eventId'],
  *                 'callback' => [$this, 'longPollCallback'],
  *             ],
@@ -40,6 +40,7 @@ class LongPollAction extends BaseLongPollAction
 
     /**
      * @return Response
+     * @throws \yii\base\InvalidConfigException
      */
     public function run()
     {

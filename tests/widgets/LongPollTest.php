@@ -12,8 +12,8 @@ use izumi\longpoll\EventCollection;
 use izumi\longpoll\widgets\LongPoll;
 use tests\TestCase;
 use Yii;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\web\AssetManager;
@@ -55,7 +55,7 @@ class LongPollTest extends TestCase
     {
         $event = new Event(['key' => 'test']);
         $collection = new EventCollection(['events' => $event]);
-        $this->expectException(InvalidParamException::class);
+        $this->expectException(InvalidArgumentException::class);
         LongPoll::createPollParams($collection, [$event->getParamName() => 'val']);
     }
 

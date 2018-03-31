@@ -9,9 +9,9 @@ namespace izumi\longpoll;
 
 use Yii;
 use yii\base\BaseObject;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 use yii\helpers\FileHelper;
 use yii\helpers\StringHelper;
 
@@ -50,6 +50,8 @@ class Event extends BaseObject implements EventInterface
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
+     * @throws \yii\base\Exception
      */
     public function init()
     {
@@ -78,7 +80,7 @@ class Event extends BaseObject implements EventInterface
             throw new InvalidCallException("The key can't be changed.");
         }
         if (!is_string($key)) {
-            throw new InvalidParamException("The event key must be a string.");
+            throw new InvalidArgumentException("The event key must be a string.");
         }
         $this->_key = $key;
     }

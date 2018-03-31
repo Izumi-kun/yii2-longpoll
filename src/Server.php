@@ -9,8 +9,8 @@ namespace izumi\longpoll;
 
 use izumi\longpoll\widgets\LongPoll;
 use Yii;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidParamException;
 use yii\helpers\Json;
 use yii\web\Response;
 
@@ -49,7 +49,7 @@ class Server extends Response
     /**
      * @var string event collection class name.
      */
-    public $eventCollectionClass = 'izumi\longpoll\EventCollection';
+    public $eventCollectionClass = EventCollection::class;
     /**
      * @var array events (string eventId => int lastState) for waiting (any).
      */
@@ -61,6 +61,7 @@ class Server extends Response
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     public function init()
     {
@@ -95,6 +96,7 @@ class Server extends Response
 
     /**
      * Sends the response content to the client.
+     * @throws InvalidConfigException
      */
     protected function sendContent()
     {
@@ -121,7 +123,7 @@ class Server extends Response
                 echo '0';
                 flush();
                 if (connection_aborted()) {
-                    Yii::trace('Client disconnected', __METHOD__);
+                    Yii::debug('Client disconnected', __METHOD__);
                     Yii::$app->end();
                 }
                 $connectionTestTime++;
@@ -153,7 +155,7 @@ class Server extends Response
         $event = $this->eventCollection->addEvent($event);
         if ($lastState !== null) {
             if (!is_int($lastState)) {
-                throw new InvalidParamException('$lastState must be an integer');
+                throw new InvalidArgumentException('$lastState must be an integer');
             }
             $this->lastStates[$event->getKey()] = $lastState;
         }
@@ -161,6 +163,7 @@ class Server extends Response
 
     /**
      * @param array|EventInterface[]|string $events the events for waiting (any).
+     * @throws InvalidConfigException
      */
     public function setEvents($events)
     {
