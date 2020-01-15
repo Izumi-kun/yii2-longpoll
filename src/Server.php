@@ -142,8 +142,10 @@ class Server extends Response
             'params' => LongPoll::createPollParams($this->eventCollection, $params)
         ]);
 
-        echo dechex(strlen($json)), "\r\n", $json, "\r\n";
-        echo "0\r\n\r\n";
+        //echo dechex(strlen($json)), "\r\n", $json, "\r\n";
+        //echo "0\r\n\r\n";
+        
+        echo $json;
     }
 
     /**
