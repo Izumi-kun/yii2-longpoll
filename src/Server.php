@@ -86,9 +86,15 @@ class Server extends Response
             }
         }
 
+        if (function_exists('apache_setenv')) {
+            apache_setenv('no-gzip', '1');
+        }
+        ini_set('zlib.output_compression', '0');
         $this->version = '1.1';
         $this->getHeaders()
             ->set('Transfer-Encoding', 'chunked')
+            ->set('Content-Encoding', 'identity')
+            ->set('x-accel-buffering', 'no')
             ->set('Content-Type', 'application/json; charset=UTF-8');
 
         Yii::$app->getSession()->close();
