@@ -1,7 +1,7 @@
 <?php
 /**
  * @link https://github.com/Izumi-kun/yii2-longpoll
- * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @copyright Copyright (c) 2025 Viktor Khokhryakov
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
 
@@ -9,7 +9,6 @@ namespace izumi\longpoll;
 
 use izumi\longpoll\widgets\LongPoll;
 use Yii;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Json;
 use yii\web\Response;
@@ -29,35 +28,35 @@ class Server extends Response
     /**
      * @var mixed response data
      */
-    public $responseData;
+    public mixed $responseData = null;
     /**
      * @var array query params
      */
-    public $responseParams = [];
+    public array $responseParams = [];
     /**
      * @var int how long poll will be (in seconds).
      */
-    public $timeout = 25;
+    public int $timeout = 25;
     /**
      * @var int time between events check (in microseconds).
      */
-    public $sleepTime = 250000;
+    public int $sleepTime = 250000;
     /**
      * @var EventCollectionInterface events for waiting (any).
      */
-    public $eventCollection;
+    public EventCollectionInterface $eventCollection;
     /**
      * @var string event collection class name.
      */
-    public $eventCollectionClass = EventCollection::class;
+    public string $eventCollectionClass = EventCollection::class;
     /**
      * @var array events (string eventId => int lastState) for waiting (any).
      */
-    protected $lastStates = [];
+    protected array $lastStates = [];
     /**
      * @var EventInterface[]|null
      */
-    protected $_triggeredEvents;
+    protected array $_triggeredEvents;
 
     /**
      * @inheritdoc
@@ -65,7 +64,7 @@ class Server extends Response
      */
     public function init()
     {
-        if (!$this->eventCollection instanceof EventCollectionInterface) {
+        if (!isset($this->eventCollection)) {
             $this->setEvents([]);
         }
     }
@@ -142,7 +141,7 @@ class Server extends Response
             call_user_func($this->callback, $this);
         }
 
-        $params = (array) $this->responseParams;
+        $params = $this->responseParams;
         $json = Json::encode([
             'data' => $this->responseData,
             'params' => LongPoll::createPollParams($this->eventCollection, $params)
@@ -153,28 +152,29 @@ class Server extends Response
     }
 
     /**
-     * @param EventInterface|string $event
+     * @param string|EventInterface $event
      * @param int|null $lastState
      */
-    public function addEvent($event, $lastState = null)
+    public function addEvent(EventInterface|string $event, ?int $lastState = null)
     {
         $event = $this->eventCollection->addEvent($event);
         if ($lastState !== null) {
-            if (!is_int($lastState)) {
-                throw new InvalidArgumentException('$lastState must be an integer');
-            }
             $this->lastStates[$event->getKey()] = $lastState;
         }
     }
 
     /**
-     * @param array|EventInterface[]|string $events the events for waiting (any).
+     * @param array|EventInterface[] $events the events for waiting (any).
      * @throws InvalidConfigException
      */
-    public function setEvents($events)
+    public function setEvents(array $events)
     {
-        if (!$this->eventCollection instanceof EventCollectionInterface) {
-            $this->eventCollection = Yii::createObject($this->eventCollectionClass);
+        if (!isset($this->eventCollection)) {
+            $collection = Yii::createObject($this->eventCollectionClass);
+            if (!$collection instanceof EventCollectionInterface) {
+                throw new InvalidConfigException('The eventCollectionClass should be a subclass of "\izumi\longpoll\EventCollectionInterface".');
+            }
+            $this->eventCollection = $collection;
         }
         $this->eventCollection->setEvents($events);
     }
@@ -182,9 +182,8 @@ class Server extends Response
     /**
      * @return EventInterface[]|null triggered events during poll run (key => event)
      */
-    public function getTriggeredEvents()
+    public function getTriggeredEvents(): ?array
     {
-        return $this->_triggeredEvents;
+        return $this->_triggeredEvents ?? null;
     }
-
 }

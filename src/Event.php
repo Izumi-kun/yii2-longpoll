@@ -1,7 +1,7 @@
 <?php
 /**
  * @link https://github.com/Izumi-kun/yii2-longpoll
- * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @copyright Copyright (c) 2025 Viktor Khokhryakov
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
 
@@ -9,7 +9,7 @@ namespace izumi\longpoll;
 
 use Yii;
 use yii\base\BaseObject;
-use yii\base\InvalidArgumentException;
+use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\helpers\FileHelper;
@@ -26,38 +26,38 @@ class Event extends BaseObject implements EventInterface
     /**
      * @var string prefix of the parameter storing the state of event
      */
-    protected $eventParamPrefix = 'event-';
+    protected string $eventParamPrefix = 'event-';
     /**
      * @var string the directory to store state files. You may use path alias here.
      */
-    protected $statesPath = '@runtime/events';
+    protected string $statesPath = '@runtime/events';
     /**
      * @var string event key
      */
-    private $_key;
+    private string $_key;
     /**
      * @var string normalized event key
      */
-    private $_keyNormalized;
+    private string $_keyNormalized;
     /**
      * @var string the state file path
      */
-    private $_filePath;
+    private string $_filePath;
     /**
      * @var int current state
      */
-    private $_state;
+    private int $_state;
 
     /**
      * @inheritdoc
      * @throws InvalidConfigException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function init()
     {
         parent::init();
-        if ($this->_key === null) {
-            throw new InvalidConfigException("The event key is required.");
+        if (!isset($this->_key)) {
+            throw new InvalidConfigException('The event key is required.');
         }
         if (ctype_alnum($this->_key) && StringHelper::byteLength($this->_key) <= 32) {
             $this->_keyNormalized = $this->_key;
@@ -74,13 +74,10 @@ class Event extends BaseObject implements EventInterface
     /**
      * @inheritdoc
      */
-    public function setKey($key)
+    public function setKey(string $key): void
     {
-        if ($this->_key !== null) {
+        if (isset($this->_key)) {
             throw new InvalidCallException("The key can't be changed.");
-        }
-        if (!is_string($key)) {
-            throw new InvalidArgumentException("The event key must be a string.");
         }
         $this->_key = $key;
     }
@@ -88,7 +85,7 @@ class Event extends BaseObject implements EventInterface
     /**
      * @inheritdoc
      */
-    public function getKey()
+    public function getKey(): string
     {
         return $this->_key;
     }
@@ -96,12 +93,12 @@ class Event extends BaseObject implements EventInterface
     /**
      * @inheritdoc
      */
-    public function trigger()
+    public function trigger(): ?int
     {
         $filePath = $this->_filePath;
         $tries = 4;
         $lastError = 'unknown reason';
-        set_error_handler(function () use (&$lastError) {
+        set_error_handler(function () use (&$lastError): void {
             $lastError = func_get_arg(1);
         });
         while ($tries > 0) {
@@ -150,7 +147,7 @@ class Event extends BaseObject implements EventInterface
      * @param string $key event key
      * @return int|null new state or null on failure
      */
-    public static function triggerByKey($key)
+    public static function triggerByKey(string $key): ?int
     {
         return (new static(['key' => $key]))->trigger();
     }
@@ -168,9 +165,9 @@ class Event extends BaseObject implements EventInterface
     /**
      * @inheritdoc
      */
-    public function getState()
+    public function getState(): int
     {
-        if ($this->_state === null) {
+        if (!isset($this->_state)) {
             $this->updateState();
         }
 
@@ -180,7 +177,7 @@ class Event extends BaseObject implements EventInterface
     /**
      * @inheritdoc
      */
-    public function getParamName()
+    public function getParamName(): string
     {
         return $this->eventParamPrefix . $this->_keyNormalized;
     }

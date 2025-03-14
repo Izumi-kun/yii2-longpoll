@@ -1,16 +1,16 @@
 <?php
 /**
  * @link https://github.com/Izumi-kun/yii2-longpoll
- * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @copyright Copyright (c) 2025 Viktor Khokhryakov
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
 
 // ensure we get report on all possible php errors
 error_reporting(-1);
 
-define('YII_ENABLE_ERROR_HANDLER', false);
-define('YII_DEBUG', true);
-define('YII_ENV', 'test');
+const YII_ENABLE_ERROR_HANDLER = false;
+const YII_DEBUG = true;
+const YII_ENV = 'test';
 
 $_SERVER['SCRIPT_NAME'] = basename(__FILE__);
 $_SERVER['SCRIPT_FILENAME'] = __FILE__;

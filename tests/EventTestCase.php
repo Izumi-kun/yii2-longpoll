@@ -1,26 +1,24 @@
 <?php
 /**
  * @link https://github.com/Izumi-kun/yii2-longpoll
- * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @copyright Copyright (c) 2025 Viktor Khokhryakov
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
 
 namespace tests;
 
 use izumi\longpoll\EventInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\helpers\ArrayHelper;
 
-class EventTestCase extends TestCase
+abstract class EventTestCase extends TestCase
 {
-    public $eventClass;
+    public string $eventClass;
 
-    /**
-     * @param array $config
-     * @return EventInterface|object
-     */
-    public function createEvent($config = [])
+    public function createEvent(array $config = []): EventInterface
     {
         return Yii::createObject(ArrayHelper::merge($config, ['class' => $this->eventClass]));
     }
@@ -31,7 +29,7 @@ class EventTestCase extends TestCase
         $this->createEvent();
     }
 
-    public function validKeysProvider()
+    public static function validKeysProvider()
     {
         return [
             [''],
@@ -42,35 +40,11 @@ class EventTestCase extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider validKeysProvider
-     * @param string $key
-     */
-    public function testValidKey($key)
+    #[DataProvider('validKeysProvider')]
+    public function testValidKey(string $key)
     {
         $event = $this->createEvent(['key' => $key]);
         $this->assertEquals($key, $event->getKey());
-    }
-
-    public function invalidKeysProvider()
-    {
-        return [
-            [123],
-            [1.23],
-            [['123']],
-            [new \stdClass()],
-            [true],
-        ];
-    }
-
-    /**
-     * @dataProvider invalidKeysProvider
-     * @param $key
-     */
-    public function testInvalidKey($key)
-    {
-        $this->expectException(\Exception::class);
-        $this->createEvent(['key' => $key]);
     }
 
     public function testKeyReassign()
@@ -80,11 +54,8 @@ class EventTestCase extends TestCase
         $event->setKey('testKey2');
     }
 
-    /**
-     * @dataProvider validKeysProvider
-     * @depends testValidKey
-     * @param string $key
-     */
+    #[DataProvider('validKeysProvider')]
+    #[Depends('testValidKey')]
     public function testParamName($key)
     {
         $event1 = $this->createEvent(['key' => $key]);
@@ -96,18 +67,14 @@ class EventTestCase extends TestCase
         $this->assertNotEquals($event1->getParamName(), $event2->getParamName());
     }
 
-    /**
-     * @depends testValidKey
-     */
+    #[Depends('testValidKey')]
     public function testGetState()
     {
         $event = $this->createEvent(['key' => 'testEvent']);
-        $this->assertInternalType('integer', $event->getState());
+        $this->assertTrue(is_int($event->getState()));
     }
 
-    /**
-     * @depends testValidKey
-     */
+    #[Depends('testValidKey')]
     public function testTrigger()
     {
         $event = $this->createEvent(['key' => 'testEvent']);
@@ -117,9 +84,7 @@ class EventTestCase extends TestCase
         $this->assertNotEquals($newState, $oldState);
     }
 
-    /**
-     * @depends testTrigger
-     */
+    #[Depends('testTrigger')]
     public function testUpdateState()
     {
         $key = 'testKey';

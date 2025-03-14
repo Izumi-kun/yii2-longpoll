@@ -1,7 +1,7 @@
 <?php
 /**
  * @link https://github.com/Izumi-kun/yii2-longpoll
- * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @copyright Copyright (c) 2025 Viktor Khokhryakov
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
 
@@ -23,29 +23,29 @@ interface EventInterface
      * @return int current state of event
      * @see updateState()
      */
-    public function getState();
+    public function getState(): int;
 
     /**
      * Trigger an event.
      * @return int|null new state or null on failure
      */
-    public function trigger();
+    public function trigger(): ?int;
 
     /**
      * Name of the GET-parameter storing the state of event.
      * @return string
      */
-    public function getParamName();
+    public function getParamName(): string;
 
     /**
      * Sets the event key.
      * @param string $key The event key.
      */
-    public function setKey($key);
+    public function setKey(string $key): void;
 
     /**
      * Returns the event key.
      * @return string The event key.
      */
-    public function getKey();
+    public function getKey(): string;
 }

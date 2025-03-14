@@ -1,20 +1,21 @@
 <?php
 /**
  * @link https://github.com/Izumi-kun/yii2-longpoll
- * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @copyright Copyright (c) 2025 Viktor Khokhryakov
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
 
 namespace tests;
 
 use izumi\longpoll\Event;
+use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\Process\PhpProcess;
 use Yii;
 use yii\helpers\FileHelper;
 
 class EventTest extends EventTestCase
 {
-    public $eventClass = Event::class;
+    public string $eventClass = Event::class;
 
     public function testStaticTriggerByKey()
     {
@@ -25,9 +26,7 @@ class EventTest extends EventTestCase
         $this->assertEquals($newState, $event->getState());
     }
 
-    /**
-     * @depends testStaticTriggerByKey
-     */
+    #[Depends('testStaticTriggerByKey')]
     public function testTriggerWithFileLock()
     {
         Event::triggerByKey('lockTest');
@@ -58,9 +57,7 @@ PHP
         $this->assertNull($result);
     }
 
-    /**
-     * @depends testStaticTriggerByKey
-     */
+    #[Depends('testStaticTriggerByKey')]
     public function testMaxState()
     {
         Event::triggerByKey('maxStateTest');

@@ -1,7 +1,7 @@
 <?php
 /**
  * @link https://github.com/Izumi-kun/yii2-longpoll
- * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @copyright Copyright (c) 2025 Viktor Khokhryakov
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
 
@@ -21,17 +21,17 @@ class EventCollection extends BaseObject implements EventCollectionInterface
     /**
      * @var EventInterface[] array of events (key => event).
      */
-    private $_events = [];
+    private array $_events = [];
     /**
      * @var string event class name.
      */
-    public $eventClass = Event::class;
+    public string $eventClass = Event::class;
 
     /**
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function addEvent($event)
+    public function addEvent(EventInterface|string|array $event): EventInterface
     {
         if (!$event instanceof EventInterface) {
             if (!is_array($event)) {
@@ -53,7 +53,7 @@ class EventCollection extends BaseObject implements EventCollectionInterface
     /**
      * @inheritdoc
      */
-    public function getEvents()
+    public function getEvents(): array
     {
         return $this->_events;
     }
@@ -62,12 +62,9 @@ class EventCollection extends BaseObject implements EventCollectionInterface
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function setEvents($events)
+    public function setEvents(array $events): void
     {
         $this->_events = [];
-        if (!is_array($events)) {
-            $events = [$events];
-        }
         foreach ($events as $event) {
             $this->addEvent($event);
         }
