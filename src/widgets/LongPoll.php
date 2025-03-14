@@ -33,11 +33,11 @@ use yii\web\View;
  */
 class LongPoll extends Widget
 {
-    public string $url;
+    public string|array $url;
     /**
-     * @var EventCollectionInterface|array|string
+     * @var EventCollectionInterface
      */
-    public EventCollectionInterface|array|string $eventCollection;
+    public EventCollectionInterface $eventCollection;
     /**
      * @var string event collection class name.
      */
@@ -61,16 +61,19 @@ class LongPoll extends Widget
      */
     public function init()
     {
-        if (!$this->eventCollection instanceof EventCollectionInterface) {
-            $this->eventCollection = Yii::createObject([
+        if (!isset($this->eventCollection)) {
+            $collection = Yii::createObject([
                 'class' => $this->eventCollectionClass,
             ]);
+            if (!$collection instanceof EventCollectionInterface) {
+                throw new InvalidConfigException('The eventCollectionClass should be a subclass of "\izumi\longpoll\EventCollectionInterface".');
+            }
+            $this->eventCollection = $collection;
         }
     }
 
     /**
      * @inheritdoc
-     * @throws InvalidConfigException
      */
     public function run()
     {
@@ -128,9 +131,15 @@ class LongPoll extends Widget
      */
     public function setEvents(array $events)
     {
-        $this->eventCollection = Yii::createObject([
-            'class' => $this->eventCollectionClass,
-            'events' => $events,
-        ]);
+        if (!isset($this->eventCollection)) {
+            $collection = Yii::createObject([
+                'class' => $this->eventCollectionClass,
+            ]);
+            if (!$collection instanceof EventCollectionInterface) {
+                throw new InvalidConfigException('The eventCollectionClass should be a subclass of "\izumi\longpoll\EventCollectionInterface".');
+            }
+            $this->eventCollection = $collection;
+        }
+        $this->eventCollection->setEvents($events);
     }
 }
