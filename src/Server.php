@@ -94,7 +94,7 @@ class Server extends Response
             ->set('Transfer-Encoding', 'chunked')
             ->set('Content-Encoding', 'identity')
             ->set('x-accel-buffering', 'no')
-            ->set('Content-Type', 'application/json; charset=UTF-8');
+            ->set('Content-Type', 'text/event-stream; charset=UTF-8');
 
         Yii::$app->getSession()->close();
     }
