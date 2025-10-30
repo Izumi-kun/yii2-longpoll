@@ -40,7 +40,7 @@ class LongPollAction extends BaseLongPollAction
     /**
      * @return Response
      */
-    public function run()
+    public function run(): Response
     {
         return $this->runInternal();
     }

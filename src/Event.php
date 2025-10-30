@@ -53,7 +53,7 @@ class Event extends BaseObject implements EventInterface
      * @throws InvalidConfigException
      * @throws Exception
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         if (!isset($this->_key)) {
@@ -137,7 +137,7 @@ class Event extends BaseObject implements EventInterface
         }
         restore_error_handler();
 
-        Yii::warning("Unable to trigger event '{$this->_key}': {$lastError}", __METHOD__);
+        Yii::warning("Unable to trigger event '$this->_key': $lastError", __METHOD__);
 
         return null;
     }
@@ -155,7 +155,7 @@ class Event extends BaseObject implements EventInterface
     /**
      * @inheritdoc
      */
-    public function updateState()
+    public function updateState(): void
     {
         clearstatcache(true, $this->_filePath);
 

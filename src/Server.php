@@ -62,7 +62,7 @@ class Server extends Response
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         if (!isset($this->eventCollection)) {
             $this->setEvents([]);
@@ -73,7 +73,7 @@ class Server extends Response
      * Prepares for sending the response.
      * @throws InvalidConfigException
      */
-    protected function prepare()
+    protected function prepare(): void
     {
         $events = $this->eventCollection->getEvents();
         if (empty($events)) {
@@ -103,7 +103,7 @@ class Server extends Response
      * Sends the response content to the client.
      * @throws InvalidConfigException
      */
-    protected function sendContent()
+    protected function sendContent(): void
     {
         $events = $this->eventCollection->getEvents();
         $endTime = time() + $this->timeout;
@@ -155,7 +155,7 @@ class Server extends Response
      * @param string|EventInterface $event
      * @param int|null $lastState
      */
-    public function addEvent(EventInterface|string $event, ?int $lastState = null)
+    public function addEvent(EventInterface|string $event, ?int $lastState = null): void
     {
         $event = $this->eventCollection->addEvent($event);
         if ($lastState !== null) {
@@ -167,7 +167,7 @@ class Server extends Response
      * @param array|EventInterface[] $events the events for waiting (any).
      * @throws InvalidConfigException
      */
-    public function setEvents(array $events)
+    public function setEvents(array $events): void
     {
         if (!isset($this->eventCollection)) {
             $collection = Yii::createObject($this->eventCollectionClass);

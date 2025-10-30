@@ -59,7 +59,7 @@ class LongPoll extends Widget
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         if (!isset($this->eventCollection)) {
             $collection = Yii::createObject([
@@ -75,7 +75,7 @@ class LongPoll extends Widget
     /**
      * @inheritdoc
      */
-    public function run()
+    public function run(): void
     {
         $id = $this->getId();
         $options = Json::htmlEncode($this->createJsOptions());
@@ -111,7 +111,7 @@ class LongPoll extends Widget
      * @return array
      * @throws InvalidConfigException
      */
-    public function createJsOptions()
+    public function createJsOptions(): array
     {
         if (!isset($this->url)) {
             throw new InvalidConfigException('The "url" property must be set.');
@@ -129,7 +129,7 @@ class LongPoll extends Widget
      * @param array $events
      * @throws InvalidConfigException
      */
-    public function setEvents(array $events)
+    public function setEvents(array $events): void
     {
         if (!isset($this->eventCollection)) {
             $collection = Yii::createObject([
