@@ -200,6 +200,7 @@ JSON;
         $newMessage = Yii::$app->getSecurity()->generateRandomString();
         $this->changeMessage($newMessage, 2);
         $result = $this->runLongPoll(5);
+        $this->assertIsArray($result);
         $this->assertEquals($newMessage, $result['data']);
     }
 
