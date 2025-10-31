@@ -1,7 +1,7 @@
 <?php
 /**
  * @link https://github.com/Izumi-kun/yii2-longpoll
- * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @copyright Copyright (c) 2025 Viktor Khokhryakov
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
 
@@ -10,6 +10,7 @@ namespace tests\widgets;
 use izumi\longpoll\Event;
 use izumi\longpoll\EventCollection;
 use izumi\longpoll\widgets\LongPoll;
+use PHPUnit\Framework\Attributes\Depends;
 use tests\TestCase;
 use Yii;
 use yii\base\InvalidArgumentException;
@@ -31,7 +32,7 @@ class LongPollTest extends TestCase
     public function testCreatePollParams()
     {
         $event = new Event(['key' => 'test']);
-        $collection = new EventCollection(['events' => $event]);
+        $collection = new EventCollection(['events' => [$event]]);
         $params = LongPoll::createPollParams($collection);
         $this->assertArraySubset([
             $event->getParamName() => $event->getState(),
@@ -54,7 +55,7 @@ class LongPollTest extends TestCase
     public function testCreatePollParamsIntersect()
     {
         $event = new Event(['key' => 'test']);
-        $collection = new EventCollection(['events' => $event]);
+        $collection = new EventCollection(['events' => [$event]]);
         $this->expectException(InvalidArgumentException::class);
         LongPoll::createPollParams($collection, [$event->getParamName() => 'val']);
     }
@@ -70,10 +71,8 @@ class LongPollTest extends TestCase
         $this->assertArrayHasKey('test2', $events);
     }
 
-    /**
-     * @depends testCreatePollParams
-     * @depends testSetEvents
-     */
+    #[Depends('testCreatePollParams')]
+    #[Depends('testSetEvents')]
     public function testCreateJsOptions()
     {
         $event1 = new Event(['key' => 'test1']);
@@ -102,14 +101,12 @@ class LongPollTest extends TestCase
 
     public function testCreateJsOptionsWithoutUrl()
     {
-        $widget = new LongPoll(['events' => 'test']);
+        $widget = new LongPoll(['events' => ['test']]);
         $this->expectException(InvalidConfigException::class);
         $widget->createJsOptions();
     }
 
-    /**
-     * @depends testCreateJsOptions
-     */
+    #[Depends('testCreateJsOptions')]
     public function testRun()
     {
         FileHelper::createDirectory(Yii::getAlias('@runtime/assets'));

@@ -1,7 +1,7 @@
 <?php
 /**
  * @link https://github.com/Izumi-kun/yii2-longpoll
- * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @copyright Copyright (c) 2025 Viktor Khokhryakov
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
 
@@ -11,55 +11,45 @@ use izumi\longpoll\Event;
 use izumi\longpoll\EventCollection;
 use izumi\longpoll\EventCollectionInterface;
 use izumi\longpoll\EventInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Yii;
 use yii\base\InvalidConfigException;
 
 class EventCollectionTest extends TestCase
 {
-    public $eventClass = Event::class;
-    public $eventCollectionClass = EventCollection::class;
+    public const EVENT_CLASS = Event::class;
+    public const EVENT_COLLECTION_CLASS = EventCollection::class;
 
-    /**
-     * @param mixed $events
-     * @return EventCollectionInterface|object
-     */
-    public function createEventCollection($events = null)
+    public function createEventCollection(mixed $events = null): EventCollectionInterface
     {
-        $config = ['class' => $this->eventCollectionClass];
+        $config = ['class' => self::EVENT_COLLECTION_CLASS];
         if ($events !== null) {
             $config['events'] = $events;
         }
         return Yii::createObject($config);
     }
 
-    public function eventsProvider()
+    public static function eventsProvider()
     {
         $key1 = 'testEvent1';
         $key2 = 'testEvent2';
         return [
-            'null' => [null, 0],
             'empty' => [[], 0],
-            'single' => [$key1, 1],
             'array single' => [[$key1], 1],
             'array multiple' => [[$key1, $key2], 2],
             'array multiple duplicated' => [[$key1, $key1], 1],
-            'config single' => [['class' => $this->eventClass, 'key' => $key1], 2],
             'config multiple' => [[
-                ['class' => $this->eventClass, 'key' => $key1],
-                ['class' => $this->eventClass, 'key' => $key2],
+                ['class' => static::EVENT_CLASS, 'key' => $key1],
+                ['class' => static::EVENT_CLASS, 'key' => $key2],
             ], 2],
             'mixed' => [[
                 $key1,
-                ['class' => $this->eventClass, 'key' => $key2],
+                ['class' => static::EVENT_CLASS, 'key' => $key2],
             ], 2],
         ];
     }
 
-    /**
-     * @dataProvider eventsProvider
-     * @param mixed $events
-     * @param int $cnt
-     */
+    #[DataProvider('eventsProvider')]
     public function testEventCollection($events, $cnt)
     {
         $eventCollection = $this->createEventCollection($events);

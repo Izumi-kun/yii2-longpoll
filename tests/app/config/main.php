@@ -1,9 +1,14 @@
 <?php
+/**
+ * @link https://github.com/Izumi-kun/yii2-longpoll
+ * @copyright Copyright (c) 2025 Viktor Khokhryakov
+ * @license http://opensource.org/licenses/BSD-3-Clause
+ */
 
 $config = [
     'id' => 'test-app',
     'basePath' => dirname(__DIR__),
-    'vendorPath' => dirname(dirname(dirname(__DIR__))) . '/vendor',
+    'vendorPath' => dirname(__DIR__, 3) . '/vendor',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm' => '@vendor/npm-asset',

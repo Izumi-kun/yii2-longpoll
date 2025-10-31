@@ -1,7 +1,7 @@
 <?php
 /**
  * @link https://github.com/Izumi-kun/yii2-longpoll
- * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @copyright Copyright (c) 2025 Viktor Khokhryakov
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
 
@@ -13,9 +13,10 @@ use izumi\longpoll\EventCollection;
 use izumi\longpoll\EventCollectionInterface;
 use izumi\longpoll\Server;
 use izumi\longpoll\widgets\LongPoll;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\Process\Process;
 use Yii;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Url;
 use yii\httpclient\Client;
@@ -26,12 +27,15 @@ class ServerTest extends TestCase
     /**
      * @var Process
      */
-    private static $server;
+    private static Process $server;
 
-    public static function setUpBeforeClass()
+    /**
+     * @throws Exception
+     */
+    public static function setUpBeforeClass(): void
     {
         $documentRoot = Yii::getAlias('@app/web');
-        $server = new Process('"' . PHP_BINARY . '"' . " -S 127.0.0.1:8080 -t \"{$documentRoot}\"");
+        $server = new Process([PHP_BINARY, '-S', '127.0.0.1:8080', '-t', $documentRoot]);
         $server->start();
         self::$server = $server;
         $timeout = 5 + time();
@@ -39,7 +43,7 @@ class ServerTest extends TestCase
             usleep(250000);
             if ($server->isRunning()) {
                 $test = @file_get_contents(Url::to('test.txt', true));
-                if (strpos($test, 'success') === 0) {
+                if (str_starts_with($test, 'success')) {
                     break;
                 }
             } else {
@@ -51,22 +55,20 @@ class ServerTest extends TestCase
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         self::$server->stop();
     }
 
-    protected function changeMessage($text, int $delay = 2)
+    protected function changeMessage($text, int $delay)
     {
-        $text = '"' . escapeshellcmd($text) . '"';
-        $cmd = "message/change --delay={$delay} {$text}";
-        $process = new Process('"' . PHP_BINARY . '"' . " tests/yii $cmd");
+        $process = new Process([PHP_BINARY, 'tests/yii', 'message/change', "--delay={$delay}", $text]);
         $process->start();
     }
 
     protected function runLongPoll(float $timeout, $extraParams = [])
     {
-        $params = LongPoll::createPollParams(new EventCollection(['events' => 'newMessage']), $extraParams);
+        $params = LongPoll::createPollParams(new EventCollection(['events' => ['newMessage']]), $extraParams);
         $url = Url::to(array_merge(['/poll/index'], $params), true);
         $request = (new Client(['transport' => CurlTransport::class]))
             ->createRequest()
@@ -76,7 +78,7 @@ class ServerTest extends TestCase
             ]);
         try {
             $response = $request->send();
-        } catch (\yii\httpclient\Exception $e) {
+        } catch (\yii\httpclient\Exception) {
             return '';
         }
         if (!$response->getIsOk()) {
@@ -100,15 +102,13 @@ class ServerTest extends TestCase
         $server->setEvents(['testEvent']);
         $this->assertArrayHasKey('testEvent', $server->eventCollection->getEvents());
 
-        $server = new Server(['events' => 'test2']);
+        $server = new Server(['events' => ['test2']]);
         $collection = $server->eventCollection;
         $this->assertInstanceOf(EventCollectionInterface::class, $collection);
         $this->assertArrayHasKey('test2', $collection->getEvents());
     }
 
-    /**
-     * @depends testSetEvents
-     */
+    #[Depends('testSetEvents')]
     public function testAddEvent()
     {
         $server = new Server();
@@ -119,27 +119,17 @@ class ServerTest extends TestCase
         $this->assertArrayHasKey('addTest2', $server->eventCollection->getEvents());
     }
 
-    public function testAddEventInvalidState()
-    {
-        $server = new Server();
-        $this->expectException(InvalidArgumentException::class);
-        $server->addEvent('addTest2', '123');
-    }
-
-    public function sendDataProvider()
+    public static function sendDataProvider()
     {
         return [
-            [1],
             [2],
-            [3],
+            [4],
+            [8],
         ];
     }
 
-    /**
-     * @depends testAddEvent
-     * @dataProvider sendDataProvider
-     * @param $delay
-     */
+    #[Depends('testAddEvent')]
+    #[DataProvider('sendDataProvider')]
     public function testSend($delay)
     {
         $event = new Event(['key' => 'newMessage']);
@@ -147,7 +137,7 @@ class ServerTest extends TestCase
         $server->addEvent($event, $event->getState());
         $callbackCalled = false;
         $state = 0;
-        $server->callback = function (Server $server) use (&$callbackCalled, &$state) {
+        $server->callback = function (Server $server) use (&$callbackCalled, &$state): void {
             $server->responseData = [
                 'key' => 'data',
                 'message' => Yii::$app->getCache()->get('message'),
@@ -172,16 +162,14 @@ JSON;
         $this->expectOutputString($expectedResponse);
     }
 
-    /**
-     * @depends testAddEvent
-     */
+    #[Depends('testAddEvent')]
     public function testSendTimeout()
     {
         $event = new Event(['key' => 'newMessage']);
         $server = new Server(['timeout' => 2]);
         $server->addEvent($event, $event->getState());
         $callbackCalled = false;
-        $server->callback = function (Server $server) use (&$callbackCalled) {
+        $server->callback = function (Server $server) use (&$callbackCalled): void {
             $server->responseData = 'no';
             $server->responseParams = ['no' => 'no'];
             $callbackCalled = true;
@@ -206,20 +194,17 @@ JSON;
         $server->send();
     }
 
-    /**
-     * @depends testSend
-     */
+    #[Depends('testSend')]
     public function testChangeMessageRemote()
     {
         $newMessage = Yii::$app->getSecurity()->generateRandomString();
         $this->changeMessage($newMessage, 2);
         $result = $this->runLongPoll(5);
+        $this->assertIsArray($result);
         $this->assertEquals($newMessage, $result['data']);
     }
 
-    /**
-     * @depends testSend
-     */
+    #[Depends('testSend')]
     public function testConnectionAbort()
     {
         $string = Yii::$app->getSecurity()->generateRandomString();

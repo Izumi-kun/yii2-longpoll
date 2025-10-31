@@ -1,7 +1,7 @@
 <?php
 /**
  * @link https://github.com/Izumi-kun/yii2-longpoll
- * @copyright Copyright (c) 2017 Viktor Khokhryakov
+ * @copyright Copyright (c) 2025 Viktor Khokhryakov
  * @license http://opensource.org/licenses/BSD-3-Clause
  */
 
@@ -33,53 +33,56 @@ use yii\web\View;
  */
 class LongPoll extends Widget
 {
-    public $url;
+    public string|array $url;
     /**
      * @var EventCollectionInterface
      */
-    public $eventCollection;
+    public EventCollectionInterface $eventCollection;
     /**
      * @var string event collection class name.
      */
-    public $eventCollectionClass = EventCollection::class;
+    public string $eventCollectionClass = EventCollection::class;
     /**
      * @var array additional options to be passed to JS registerer.
      */
-    public $clientOptions;
+    public array $clientOptions = [];
     /**
      * @var array params will be passed to JS XHR
      */
-    public $requestParams = [];
+    public array $requestParams = [];
     /**
      * @var string
      */
-    public $callback;
+    public string $callback;
 
     /**
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
-        if (!$this->eventCollection instanceof EventCollectionInterface) {
-            $this->eventCollection = Yii::createObject([
+        if (!isset($this->eventCollection)) {
+            $collection = Yii::createObject([
                 'class' => $this->eventCollectionClass,
             ]);
+            if (!$collection instanceof EventCollectionInterface) {
+                throw new InvalidConfigException('The eventCollectionClass should be a subclass of "\izumi\longpoll\EventCollectionInterface".');
+            }
+            $this->eventCollection = $collection;
         }
     }
 
     /**
      * @inheritdoc
-     * @throws InvalidConfigException
      */
-    public function run()
+    public function run(): void
     {
         $id = $this->getId();
         $options = Json::htmlEncode($this->createJsOptions());
         $view = $this->getView();
         LongPollAsset::register($view);
         $view->registerJs("jQuery.longpoll.register('$id', $options);", View::POS_END);
-        $view->registerJs("jQuery.longpoll.get('$id').start();", View::POS_READY);
+        $view->registerJs("jQuery.longpoll.get('$id').start();");
     }
 
     /**
@@ -88,7 +91,7 @@ class LongPoll extends Widget
      * @return array
      * @throws InvalidConfigException
      */
-    public static function createPollParams(EventCollectionInterface $eventCollection, $params = [])
+    public static function createPollParams(EventCollectionInterface $eventCollection, array $params = []): array
     {
         $events = [];
         foreach ($eventCollection->getEvents() as $event) {
@@ -108,7 +111,7 @@ class LongPoll extends Widget
      * @return array
      * @throws InvalidConfigException
      */
-    public function createJsOptions()
+    public function createJsOptions(): array
     {
         if (!isset($this->url)) {
             throw new InvalidConfigException('The "url" property must be set.');
@@ -116,7 +119,7 @@ class LongPoll extends Widget
         $options = $this->clientOptions;
         $options['url'] = Url::to($this->url);
         $options['params'] = self::createPollParams($this->eventCollection, $this->requestParams);
-        if ($this->callback) {
+        if (isset($this->callback)) {
             $options['callback'] = new JsExpression($this->callback);
         }
         return $options;
@@ -126,11 +129,17 @@ class LongPoll extends Widget
      * @param array $events
      * @throws InvalidConfigException
      */
-    public function setEvents($events)
+    public function setEvents(array $events): void
     {
-        $this->eventCollection = Yii::createObject([
-            'class' => $this->eventCollectionClass,
-            'events' => $events,
-        ]);
+        if (!isset($this->eventCollection)) {
+            $collection = Yii::createObject([
+                'class' => $this->eventCollectionClass,
+            ]);
+            if (!$collection instanceof EventCollectionInterface) {
+                throw new InvalidConfigException('The eventCollectionClass should be a subclass of "\izumi\longpoll\EventCollectionInterface".');
+            }
+            $this->eventCollection = $collection;
+        }
+        $this->eventCollection->setEvents($events);
     }
 }
